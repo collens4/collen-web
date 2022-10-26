@@ -1,8 +1,5 @@
 pipeline {
   agent any
-  
-  tools {nodejs "NODEJS"}
-  
   stages {
     stage('Checkout code') {
       steps {
@@ -20,12 +17,15 @@ pipeline {
 
         stage('Frontend unit tests') {
           steps {
-            sh 'npm install && npm run test'
+            sh 'npm i && npm run test'
           }
         }
 
       }
     }
 
+  }
+  tools {
+    nodejs 'NODEJS'
   }
 }
