@@ -1,31 +1,43 @@
 pipeline {
-  agent any
-  stages {
-    stage('Checkout code') {
-      steps {
-        git(url: 'https://github.com/EBEN4REAL/docker-app', branch: 'master')
-      }
+    agent any
+    tools {
+        nodejs 'node'
     }
-
-    stage('Log') {
-      parallel {
-        stage('Log') {
-          steps {
-            sh 'ls -la'
-          }
+    stages {
+        stage('build app') {
+            steps {
+               script {
+                   echo "building the application..."
+                   sh 'npm install -g npm@9.5.1'
+               }
+            }
         }
-
-        stage('Frontend unit tests') {
-          steps {
-            sh 'npm i'
-          }
+        stage('build image') {
+            steps {
+                script {
+                    echo "building the docker image..."
+                    sh 'docker build -t wolburg-frontend .'
+                }
+            }
+}
+        stage('deploy to ECR') {
+            steps {
+                 withAWS(credentials: 'moladipoawscred', region: 'us-east-2'){
+                   echo 'deploying docker image to aws ecr...'
+                   sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 844268948863.dkr.ecr.us-east-2.amazonaws.com'
+                   echo 'tag the image for ecr'
+                   sh 'docker tag wolburg-frontend:latest 844268948863.dkr.ecr.us-east-2.amazonaws.com/wolburg-frontend:latest'
+                   sh 'docker push 844268948863.dkr.ecr.us-east-2.amazonaws.com/wolburg-frontend:latest'
+                 }
+            }
         }
-
-      }
-    }
-
-  }
-  tools {
-    nodejs 'NODEJS'
-  }
+        stage('deploy to k8s cluster') {
+            steps {
+                withAWS(credentials: 'jideawscred', region: 'us-east-1'){
+                echo 'deployment into kubernetes cluster'
+                sh 'kubectl apply -f wolburgfront-app.yml'
+            }
+        }    
+    }
+}
 }
