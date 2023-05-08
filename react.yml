@@ -19,26 +19,6 @@ spec:
       containers:
       - name: react-frontend 
         image: collens4/reactapp:1
-        # env:
-        # - name: STRIPE_PUBLISHABLE_KEY
-        #   valueFrom:
-        #     secretKeyRef:
-        #       name: frontend-secret
-        #       key: STRIPE_PUBLISHABLE_KEY
-        #       optional: false
-        # imagePullPolicy: Always
-        # livenessProbe:
-        #   httpGet:
-        #     path: /
-        #     port: 80
-        #     host: 157.230.76.149
-        #     scheme: HTTP
-        #   initialDelaySeconds: 300
-        #   periodSeconds: 30
-        # resources:
-        #   requests:
-        #   #memory request
-        #     memory: 25Mi
         ports:
         - containerPort: 3000
 ---
