@@ -8,7 +8,7 @@ pipeline {
             steps {
                script {
                    echo "building the application..."
-                   sh 'npm install -g npm@9.5.1'
+                   sh 'npm install'
                }
             }
         }
@@ -16,26 +16,25 @@ pipeline {
             steps {
                 script {
                     echo "building the docker image..."
-                    sh 'docker build -t wolburg-frontend .'
+                    sh 'docker build -t <Docker Hub Username>/<Image Name>:<Tag> .'
                 }
             }
 }
-        stage('deploy to ECR') {
+        stage('deploy to DockerHub') {
             steps {
-                 withAWS(credentials: 'moladipoawscred', region: 'us-east-2'){
-                   echo 'deploying docker image to aws ecr...'
-                   sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 844268948863.dkr.ecr.us-east-2.amazonaws.com'
-                   echo 'tag the image for ecr'
-                   sh 'docker tag wolburg-frontend:latest 844268948863.dkr.ecr.us-east-2.amazonaws.com/wolburg-frontend:latest'
-                   sh 'docker push 844268948863.dkr.ecr.us-east-2.amazonaws.com/wolburg-frontend:latest'
+                   echo 'deploying docker image to dockerhub'
+                   sh 'docker login -u <Docker Hub Username> -p <Docker Hub Password>'
+                   echo 'tag the image for dockerHub'
+                   sh 'docker tag <Docker Hub Username>/<Image Name>:<Tag>'
+                   sh 'docker push <Docker Hub Username>/<Image Name>:<Tag>'
                  }
             }
         }
         stage('deploy to k8s cluster') {
             steps {
-                withAWS(credentials: 'jideawscred', region: 'us-east-1'){
+                withAWS(credentials: '<awscred>', region: '<region>'){
                 echo 'deployment into kubernetes cluster'
-                sh 'kubectl apply -f wolburgfront-app.yml'
+                sh 'kubectl apply -f react.yml'
             }
         }    
     }
